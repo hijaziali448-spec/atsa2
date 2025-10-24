@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useProducts } from '../hooks/useProducts';
 import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '../config/firebase';
+import { db } from '../config/firebase';
+import { uploadToPostimages } from '../services/postimagesUpload';
 import { Plus, Edit2, Trash2, LogOut, Home, Upload, X } from 'lucide-react';
 
 export function AdminDashboard() {
@@ -40,18 +40,15 @@ export function AdminDashboard() {
     }
 
     setUploading(true);
-    console.log('Uploading image to Firebase Storage:', file.name);
+    console.log('Uploading image to Postimages:', file.name);
     try {
-      const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
-      const snapshot = await uploadBytes(storageRef, file);
-      console.log('Upload successful:', snapshot);
-      const downloadURL = await getDownloadURL(storageRef);
-      console.log('Download URL generated:', downloadURL);
-      setFormData({ ...formData, imageUrl: downloadURL });
+      const directLink = await uploadToPostimages(file);
+      console.log('Upload successful, direct link:', directLink);
+      setFormData({ ...formData, imageUrl: directLink });
       setUploadedFile(file);
     } catch (error) {
-      console.error('Error uploading image to Firebase Storage:', error);
-      alert('Failed to upload image. Check console for details.');
+      console.error('Error uploading image to Postimages:', error);
+      alert('Failed to upload image. Please try again.');
     } finally {
       setUploading(false);
     }

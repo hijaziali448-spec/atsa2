@@ -20,15 +20,18 @@ export function AdminLogin() {
     try {
       if (isSignUp) {
         await signup(email, password);
-        setIsSignUp(false);
-        setError('Account created successfully! Please log in.');
+        navigate('/');
       } else {
         await login(email, password);
         navigate('/');
       }
     } catch (err: any) {
       if (isSignUp) {
-        setError(err.message || 'Failed to create account');
+        if (err.code === 'auth/email-already-in-use') {
+          setError('This email already has an account. Please log in instead.');
+        } else {
+          setError(err.message || 'Failed to create account');
+        }
       } else {
         setError('Invalid email or password');
       }

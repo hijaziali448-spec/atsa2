@@ -5,6 +5,20 @@ import { ProductDetail } from './pages/ProductDetail';
 import { AdminLogin } from './pages/AdminLogin';
 import { AdminDashboard } from './pages/AdminDashboard';
 
+function AuthRequiredRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-[#3d4f5c] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  return user ? <>{children}</> : <Navigate to="/admin/login" />;
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAdmin, loading } = useAuth();
 
@@ -24,9 +38,23 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/product/:slug" element={<ProductDetail />} />
           <Route path="/admin/login" element={<AdminLogin />} />
+          <Route
+            path="/"
+            element={
+              <AuthRequiredRoute>
+                <Home />
+              </AuthRequiredRoute>
+            }
+          />
+          <Route
+            path="/product/:slug"
+            element={
+              <AuthRequiredRoute>
+                <ProductDetail />
+              </AuthRequiredRoute>
+            }
+          />
           <Route
             path="/admin"
             element={
